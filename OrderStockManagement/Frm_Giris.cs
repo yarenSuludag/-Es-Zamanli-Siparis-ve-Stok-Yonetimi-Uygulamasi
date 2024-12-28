@@ -30,5 +30,20 @@ namespace OrderStockManagement
 			fr.Show();
 			this.Hide();
 		}
-	}
+
+        private void orderCustomerIdLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void Frm_Giris_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
 }

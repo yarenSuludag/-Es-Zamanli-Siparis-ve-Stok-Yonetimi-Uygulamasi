@@ -63,5 +63,15 @@ namespace OrderStockManagement
 			fr.Show();
 			this.Hide();
 		}
-	}
+
+        private void Frm_M_Giris_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Musteri_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
 }

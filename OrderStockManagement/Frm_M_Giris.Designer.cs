@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_M_Giris));
             this.Btn_M_Giris = new System.Windows.Forms.Button();
             this.Msk_M_Id = new System.Windows.Forms.TextBox();
             this.Txt_M_Sifre = new System.Windows.Forms.TextBox();
@@ -38,9 +39,9 @@
             // Btn_M_Giris
             // 
             this.Btn_M_Giris.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.Btn_M_Giris.Location = new System.Drawing.Point(104, 174);
+            this.Btn_M_Giris.Location = new System.Drawing.Point(444, 272);
             this.Btn_M_Giris.Name = "Btn_M_Giris";
-            this.Btn_M_Giris.Size = new System.Drawing.Size(185, 43);
+            this.Btn_M_Giris.Size = new System.Drawing.Size(81, 40);
             this.Btn_M_Giris.TabIndex = 0;
             this.Btn_M_Giris.Text = "Giriş Yap";
             this.Btn_M_Giris.UseVisualStyleBackColor = true;
@@ -48,24 +49,25 @@
             // 
             // Msk_M_Id
             // 
-            this.Msk_M_Id.Location = new System.Drawing.Point(189, 79);
+            this.Msk_M_Id.Location = new System.Drawing.Point(221, 119);
             this.Msk_M_Id.Name = "Msk_M_Id";
-            this.Msk_M_Id.Size = new System.Drawing.Size(100, 22);
+            this.Msk_M_Id.Size = new System.Drawing.Size(187, 22);
             this.Msk_M_Id.TabIndex = 1;
             // 
             // Txt_M_Sifre
             // 
-            this.Txt_M_Sifre.Location = new System.Drawing.Point(189, 128);
+            this.Txt_M_Sifre.Location = new System.Drawing.Point(221, 215);
             this.Txt_M_Sifre.Name = "Txt_M_Sifre";
-            this.Txt_M_Sifre.Size = new System.Drawing.Size(100, 22);
+            this.Txt_M_Sifre.Size = new System.Drawing.Size(187, 22);
             this.Txt_M_Sifre.TabIndex = 2;
             this.Txt_M_Sifre.UseSystemPasswordChar = true;
             // 
             // Musteri
             // 
             this.Musteri.AutoSize = true;
+            this.Musteri.BackColor = System.Drawing.Color.Transparent;
             this.Musteri.Font = new System.Drawing.Font("Cooper Black", 12F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Musteri.Location = new System.Drawing.Point(56, 79);
+            this.Musteri.Location = new System.Drawing.Point(38, 119);
             this.Musteri.Name = "Musteri";
             this.Musteri.Size = new System.Drawing.Size(125, 23);
             this.Musteri.TabIndex = 3;
@@ -75,8 +77,9 @@
             // label2
             // 
             this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.Color.Transparent;
             this.label2.Font = new System.Drawing.Font("Cooper Black", 12F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(113, 128);
+            this.label2.Location = new System.Drawing.Point(88, 213);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(66, 23);
             this.label2.TabIndex = 4;
@@ -88,7 +91,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.PapayaWhip;
-            this.ClientSize = new System.Drawing.Size(428, 321);
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ClientSize = new System.Drawing.Size(596, 405);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.Musteri);
             this.Controls.Add(this.Txt_M_Sifre);

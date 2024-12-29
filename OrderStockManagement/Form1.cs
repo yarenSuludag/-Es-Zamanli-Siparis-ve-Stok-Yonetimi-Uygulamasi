@@ -30,9 +30,11 @@ namespace OrderStockManagement
             LoadCustomers();
             LoadProducts();
             LoadLogs();
+            // Sipariş listesi yükleme ve animasyon
             UpdateOrderQueueDisplay();
+            AnimateOrderQueue();
 
-			customersGridView.MultiSelect = true;
+            customersGridView.MultiSelect = true;
 			customersGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 			DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
 			checkColumn.HeaderText = "Seç";
@@ -179,31 +181,102 @@ namespace OrderStockManagement
 
 
 
-		private void UpdateOrderQueueDisplay()
-		{
-			lock (orderQueue)
-			{
-				var dataSource = orderQueue
-					.Select(o => new { o.CustomerId, o.ProductId, o.Quantity, o.Priority })
-					.OrderByDescending(o => o.Priority)
-					.ToList();
+        private void UpdateOrderQueueDisplay()
+        {
+            try
+            {
+                string query = "SELECT OrderID, CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus FROM Orders";
+                DataTable ordersTable = DatabaseHelper.ExecuteQuery(query);
 
-				if (orderQueueGridView.InvokeRequired)
-				{
-					orderQueueGridView.Invoke(new Action(() =>
-					{
-						orderQueueGridView.DataSource = dataSource;
-					}));
-				}
-				else
-				{
-					orderQueueGridView.DataSource = dataSource;
-				}
-			}
-		}
+                if (orderQueueGridView.InvokeRequired)
+                {
+                    orderQueueGridView.Invoke(new Action(() =>
+                    {
+                        orderQueueGridView.DataSource = ordersTable;
+                    }));
+                }
+                else
+                {
+                    orderQueueGridView.DataSource = ordersTable;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Sipariş listesi yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
 
-		private void ProcessOrders()
+
+        private string GetCustomerNameById(int customerId)
+        {
+            string query = "SELECT CustomerName FROM customers WHERE CustomerID = @customerId";
+            using (MySqlConnection connection = DatabaseHelper.GetConnection())
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@customerId", customerId);
+                connection.Open();
+                var result = command.ExecuteScalar();
+                return result?.ToString() ?? "Bilinmeyen Müşteri";
+            }
+        }
+
+        private string GetProductNameById(int productId)
+        {
+            string query = "SELECT ProductName FROM products WHERE ProductID = @productId";
+            using (MySqlConnection connection = DatabaseHelper.GetConnection())
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@productId", productId);
+                connection.Open();
+                var result = command.ExecuteScalar();
+                return result?.ToString() ?? "Bilinmeyen Ürün";
+            }
+        }
+
+
+
+
+        private void AnimateOrderQueue()
+        {
+            // Örnek olarak bir animasyon efekti (listeyi yeniden yüklerken)
+            orderQueueGridView.ClearSelection();
+            for (int i = 0; i < orderQueueGridView.Rows.Count; i++)
+            {
+                orderQueueGridView.Rows[i].DefaultCellStyle.BackColor = i % 2 == 0 ? Color.LightBlue : Color.LightGray;
+            }
+        }
+
+        private void ApproveAllOrders()
+        {
+            lock (orderQueue)
+            {
+                while (orderQueue.Count > 0)
+                {
+                    var order = orderQueue[0];
+                    orderQueue.RemoveAt(0); // İlk siparişi çıkar
+
+                    ProcessOrder(order); // Siparişi işle
+                }
+            }
+
+            MessageBox.Show("Tüm siparişler başarıyla onaylandı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Sipariş listesi güncelleme ve animasyon
+            UpdateOrderQueueDisplay();
+            AnimateOrderQueue();
+        }
+
+
+
+
+        private void approveAllButton_Click(object sender, EventArgs e)
+        {
+            ApproveAllOrders();
+        }
+
+
+        private void ProcessOrders()
         {
             while (true)
             {
@@ -213,22 +286,28 @@ namespace OrderStockManagement
                 {
                     if (orderQueue.Count > 0)
                     {
-                        orderQueue.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+                        orderQueue.Sort((a, b) => b.Priority.CompareTo(a.Priority)); // Öncelik sıralaması
                         order = orderQueue[0];
-                        orderQueue.RemoveAt(0);
+                        orderQueue.RemoveAt(0); // İlk siparişi kaldır
                     }
                 }
 
                 if (order != null)
                 {
-                    ProcessOrder(order);
+                    ProcessOrder(order); // Siparişi işleme
                 }
                 else
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1000); // Eğer sipariş yoksa bir süre bekle
                 }
+
+                // Sipariş listesi güncelleme ve animasyon
+                UpdateOrderQueueDisplay();
+                AnimateOrderQueue();
             }
         }
+
+
 
         private void ProcessOrder(Order order)
         {
@@ -423,6 +502,9 @@ namespace OrderStockManagement
 			}
 		}
 
+        private void orderQueueGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
-	}
+        }
+    }
 }

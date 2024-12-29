@@ -536,5 +536,43 @@ namespace OrderStockManagement
 				MessageBox.Show("Lütfen yalnızca bir malzeme seçin.");
 			}
 		}
-	}
+
+        private void editCustomerButton_Click(object sender, EventArgs e)
+        {
+            int selectedCount = 0;
+            int customerId = 0;
+            string customerName = "";
+            float budget = 0;
+            string customerType = "";
+
+            foreach (DataGridViewRow row in customersGridView.Rows)
+            {
+                DataGridViewCheckBoxCell checkBox = (DataGridViewCheckBoxCell)row.Cells["checkBoxColumn"];
+                if (checkBox.Value != null && (bool)checkBox.Value == true)
+                {
+                    selectedCount++;
+                    customerId = Convert.ToInt32(row.Cells["CustomerID"].Value);
+                    customerName = row.Cells["CustomerName"].Value.ToString();
+                    budget = Convert.ToSingle(row.Cells["Budget"].Value);
+                    customerType = row.Cells["CustomerType"].Value.ToString();
+                }
+            }
+
+            if (selectedCount == 0)
+            {
+                MessageBox.Show("Lütfen güncellemek için bir müşteri seçin.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else if (selectedCount > 1)
+            {
+                MessageBox.Show("Sadece bir müşteri seçebilirsiniz.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                frm_musteri_gun customerUpdateForm = new frm_musteri_gun(customerId, customerName, budget, customerType);
+                customerUpdateForm.ShowDialog();
+                LoadCustomers(); // Müşteri listesini güncelle
+            }
+        }
+
+    }
 }

@@ -140,6 +140,12 @@
     <Compile Include="Frm_Musteri.Designer.cs">
       <DependentUpon>Frm_Musteri.cs</DependentUpon>
     </Compile>
+    <Compile Include="frm_musteri_gun.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_musteri_gun.Designer.cs">
+      <DependentUpon>frm_musteri_gun.cs</DependentUpon>
+    </Compile>
     <Compile Include="Frm_M_ekle.cs">
       <SubType>Form</SubType>
     </Compile>

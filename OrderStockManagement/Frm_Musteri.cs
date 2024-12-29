@@ -26,7 +26,7 @@ namespace OrderStockManagement
 		{
 			LblNo.Text = M_id;
 
-			string query = "SELECT CustomerName FROM customers WHERE CustomerID=@p1";
+			string query = "SELECT CustomerName, Budget FROM customers WHERE CustomerID=@p1";
 
 			try
 			{
@@ -42,6 +42,7 @@ namespace OrderStockManagement
 				{
 					// CustomerName sütununu LblAd.Text'e yaz
 					LblAd.Text = result.Rows[0]["CustomerName"].ToString();
+					LbButce.Text = result.Rows[0]["Budget"].ToString();
 				}
 				else
 				{
@@ -127,7 +128,8 @@ namespace OrderStockManagement
 
         private void placeOrderButton_Click_1(object sender, EventArgs e)
         {
-            try
+			Form1 frmbir = (Form1)Application.OpenForms["Form1"];
+			try
             {
                 int customerId = int.Parse(LblNo.Text);
                 int productId = int.Parse(orderProductIdTextBox.Text);
@@ -173,8 +175,9 @@ namespace OrderStockManagement
                 // Log kaydı oluştur
                 LogAction(customerId, "Info", $"Sipariş sıraya alındı: Ürün ID: {productId}, Miktar: {quantity}");
 
+
                 // Sipariş listesini güncelle
-                UpdateOrderQueueDisplay();
+                //UpdateOrderQueueDisplay();
 
                 // Kullanıcıya bilgi mesajı göster
                 MessageBox.Show("Sipariş sıraya alındı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -239,28 +242,28 @@ namespace OrderStockManagement
 
 
 
-        private void UpdateOrderQueueDisplay()
-		{
-			lock (orderQueue)
-			{
-				var dataSource = orderQueue
-					.Select(o => new { o.ProductId, ProductName = GetProductNameById(o.ProductId), o.Quantity, o.Priority })
-					.OrderByDescending(o => o.Priority)
-					.ToList();
+  //      private void UpdateOrderQueueDisplay()
+		//{
+		//	lock (orderQueue)
+		//	{
+		//		var dataSource = orderQueue
+		//			.Select(o => new { o.ProductId, ProductName = GetProductNameById(o.ProductId), o.Quantity, o.Priority })
+		//			.OrderByDescending(o => o.Priority)
+		//			.ToList();
 
-				if (siparisdataGridView.InvokeRequired)
-				{
-					siparisdataGridView.Invoke(new Action(() =>
-					{
-						siparisdataGridView.DataSource = dataSource;
-					}));
-				}
-				else
-				{
-					siparisdataGridView.DataSource = dataSource;
-				}
-			}
-		}
+		//		if (siparisdataGridView.InvokeRequired)
+		//		{
+		//			siparisdataGridView.Invoke(new Action(() =>
+		//			{
+		//				siparisdataGridView.DataSource = dataSource;
+		//			}));
+		//		}
+		//		else
+		//		{
+		//			siparisdataGridView.DataSource = dataSource;
+		//		}
+		//	}
+		//}
 
 		private string GetProductNameById(int productId)
 		{
@@ -310,6 +313,11 @@ namespace OrderStockManagement
 		}
 
 		private void orderProductIdLabel_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void LbButce_Click(object sender, EventArgs e)
 		{
 
 		}

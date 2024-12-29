@@ -47,13 +47,15 @@ namespace OrderStockManagement
 			productsGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 			DataGridViewCheckBoxColumn checkColumn2 = new DataGridViewCheckBoxColumn();
 			checkColumn2.HeaderText = "Seç";
-			checkColumn2.Name = "checkBoxColumn";
+			checkColumn2.Name = "checkBoxColumn2";
 			checkColumn2.Width = 30;
 			checkColumn2.ReadOnly = false;
 			productsGridView.Columns.Insert(0, checkColumn2);
+
+			//productsGridView.ReadOnly=true;
 		}
 
-        private void CustomizeUI()
+		private void CustomizeUI()
         {
             this.BackColor = Color.WhiteSmoke;
             this.Font = new Font("Segoe UI", 10);
@@ -502,9 +504,37 @@ namespace OrderStockManagement
 			}
 		}
 
-        private void orderQueueGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
+		private void editProductButton_Click(object sender, EventArgs e)
+		{
+			int selectedCount = 0;
+			int productId = 0;
 
-        }
-    }
+			foreach (DataGridViewRow row in productsGridView.Rows)
+			{
+				DataGridViewCheckBoxCell checkBox = (DataGridViewCheckBoxCell)row.Cells["checkBoxColumn2"];
+				if (checkBox.Value != null && (bool)checkBox.Value == true)
+				{
+					selectedCount++;
+					productId = Convert.ToInt32(row.Cells["ProductID"].Value);
+				}
+			}
+
+			if (selectedCount == 1)
+			{
+				int productID = Convert.ToInt32(productsGridView.SelectedRows[0].Cells["ProductID"].Value);
+				string productName = productsGridView.SelectedRows[0].Cells["ProductName"].Value.ToString();
+				int stock = Convert.ToInt32(productsGridView.SelectedRows[0].Cells["Stock"].Value);
+				decimal price = Convert.ToDecimal(productsGridView.SelectedRows[0].Cells["Price"].Value);
+
+				// Frm_urun_guncelle formunu başlat ve bilgileri aktar
+				frm_urun_gun frm = new frm_urun_gun(productID, productName, stock, price);
+				frm.Show();
+
+			}
+			else
+			{
+				MessageBox.Show("Lütfen yalnızca bir malzeme seçin.");
+			}
+		}
+	}
 }

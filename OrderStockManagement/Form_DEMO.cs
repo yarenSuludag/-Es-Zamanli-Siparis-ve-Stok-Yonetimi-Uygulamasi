@@ -16,5 +16,10 @@ namespace OrderStockManagement
 		{
 			InitializeComponent();
 		}
+
+		private void placeOrderButton_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 }

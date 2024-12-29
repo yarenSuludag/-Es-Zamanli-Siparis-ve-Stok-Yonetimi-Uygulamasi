@@ -87,7 +87,7 @@
 			this.orderProductIdLabel.Size = new System.Drawing.Size(56, 26);
 			this.orderProductIdLabel.TabIndex = 27;
 			this.orderProductIdLabel.Text = "Ürün ID:";
-			this.orderProductIdLabel.Click += new System.EventHandler(this.orderProductIdLabel_Click);
+//			this.orderProductIdLabel.Click += new System.EventHandler(this.orderProductIdLabel_Click);
 			// 
 			// orderProductIdTextBox
 			// 
@@ -96,7 +96,7 @@
 			this.orderProductIdTextBox.Name = "orderProductIdTextBox";
 			this.orderProductIdTextBox.Size = new System.Drawing.Size(132, 22);
 			this.orderProductIdTextBox.TabIndex = 28;
-			this.orderProductIdTextBox.TextChanged += new System.EventHandler(this.orderProductIdTextBox_TextChanged);
+		//	this.orderProductIdTextBox.TextChanged += new System.EventHandler(this.orderProductIdTextBox_TextChanged);
 			// 
 			// orderQuantityLabel
 			// 
@@ -106,7 +106,7 @@
 			this.orderQuantityLabel.Size = new System.Drawing.Size(44, 26);
 			this.orderQuantityLabel.TabIndex = 29;
 			this.orderQuantityLabel.Text = "Miktar:";
-			this.orderQuantityLabel.Click += new System.EventHandler(this.orderQuantityLabel_Click);
+	//		this.orderQuantityLabel.Click += new System.EventHandler(this.orderQuantityLabel_Click);
 			// 
 			// orderQuantityTextBox
 			// 
@@ -115,7 +115,7 @@
 			this.orderQuantityTextBox.Name = "orderQuantityTextBox";
 			this.orderQuantityTextBox.Size = new System.Drawing.Size(132, 22);
 			this.orderQuantityTextBox.TabIndex = 30;
-			this.orderQuantityTextBox.TextChanged += new System.EventHandler(this.orderQuantityTextBox_TextChanged);
+			//this.orderQuantityTextBox.TextChanged += new System.EventHandler(this.orderQuantityTextBox_TextChanged);
 			// 
 			// placeOrderButton
 			// 
@@ -161,7 +161,7 @@
 			this.groupBox1.TabIndex = 34;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Müşteri Bilgi";
-			this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+			//this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
 			// 
 			// LblAd
 			// 
@@ -199,7 +199,7 @@
 			this.LbButce.Size = new System.Drawing.Size(72, 28);
 			this.LbButce.TabIndex = 32;
 			this.LbButce.Text = "00000";
-			this.LbButce.Click += new System.EventHandler(this.LbButce_Click);
+			//this.LbButce.Click += new System.EventHandler(this.LbButce_Click);
 			// 
 			// label3
 			// 

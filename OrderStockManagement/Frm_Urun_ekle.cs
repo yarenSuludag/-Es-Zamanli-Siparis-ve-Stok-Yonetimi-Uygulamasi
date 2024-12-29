@@ -50,6 +50,7 @@ namespace OrderStockManagement
 
 				MessageBox.Show("Ürün başarıyla eklendi!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				this.Close();
+				frmbir.Close();
 			}
 			catch (Exception ex)
 			{

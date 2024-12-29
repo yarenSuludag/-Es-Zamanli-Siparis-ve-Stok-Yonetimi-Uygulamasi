@@ -46,13 +46,14 @@ namespace OrderStockManagement
 
 				DatabaseHelper.ExecuteNonQuery(query, parameters);
 
-				formMain.LogAction(null, "Info", $"Ürün güncellendi: {newName}");
+				formMain.LogAction(null, "Info", $"Ürün güncellendi: {newName}", productid);
 				formMain.LoadProducts();
 				formMain.LoadLogs();
 
 				MessageBox.Show("Ürün başarıyla güncellendi!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 				this.Close();
+				formMain.Close();
 			}
 			catch (Exception ex)
 			{

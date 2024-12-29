@@ -130,7 +130,7 @@
 			this.logsGridView.Margin = new System.Windows.Forms.Padding(4);
 			this.logsGridView.Name = "logsGridView";
 			this.logsGridView.RowHeadersWidth = 51;
-			this.logsGridView.Size = new System.Drawing.Size(927, 212);
+			this.logsGridView.Size = new System.Drawing.Size(799, 212);
 			this.logsGridView.TabIndex = 15;
 			// 
 			// addCustomerButton
@@ -157,18 +157,18 @@
 			// 
 			this.orderQueueGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
 			this.orderQueueGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.orderQueueGridView.Location = new System.Drawing.Point(967, 424);
+			this.orderQueueGridView.Location = new System.Drawing.Point(846, 424);
 			this.orderQueueGridView.Name = "orderQueueGridView";
 			this.orderQueueGridView.RowHeadersWidth = 51;
-			this.orderQueueGridView.Size = new System.Drawing.Size(255, 212);
+			this.orderQueueGridView.Size = new System.Drawing.Size(376, 212);
 			this.orderQueueGridView.TabIndex = 28;
 			// 
 			// label4
 			// 
-			this.label4.Location = new System.Drawing.Point(964, 393);
+			this.label4.Location = new System.Drawing.Point(843, 393);
 			this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(133, 28);
+			this.label4.Size = new System.Drawing.Size(254, 28);
 			this.label4.TabIndex = 29;
 			this.label4.Text = "Sipariş Sırası";
 			this.label4.Click += new System.EventHandler(this.label4_Click);

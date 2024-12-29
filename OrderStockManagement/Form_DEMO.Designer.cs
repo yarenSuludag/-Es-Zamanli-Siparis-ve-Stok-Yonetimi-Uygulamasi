@@ -79,6 +79,7 @@
 			this.placeOrderButton.Size = new System.Drawing.Size(138, 38);
 			this.placeOrderButton.TabIndex = 34;
 			this.placeOrderButton.Text = "Sipariş Ver";
+			this.placeOrderButton.Click += new System.EventHandler(this.placeOrderButton_Click);
 			// 
 			// orderCustomerIdLabel
 			// 

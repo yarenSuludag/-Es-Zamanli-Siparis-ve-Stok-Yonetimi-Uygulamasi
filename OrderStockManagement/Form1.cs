@@ -40,6 +40,15 @@ namespace OrderStockManagement
 			checkColumn.Width = 30;
 			checkColumn.ReadOnly = false;
 			customersGridView.Columns.Insert(0, checkColumn);
+
+			productsGridView.MultiSelect = true;
+			productsGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+			DataGridViewCheckBoxColumn checkColumn2 = new DataGridViewCheckBoxColumn();
+			checkColumn2.HeaderText = "Seç";
+			checkColumn2.Name = "checkBoxColumn";
+			checkColumn2.Width = 30;
+			checkColumn2.ReadOnly = false;
+			productsGridView.Columns.Insert(0, checkColumn2);
 		}
 
         private void CustomizeUI()
@@ -306,20 +315,22 @@ namespace OrderStockManagement
             frm.Show();
         }
 
-        public void LogAction(int? customerId, string logType, string details)
-        {
-            string query = "INSERT INTO Logs (CustomerID, LogType, LogDetails, LogDate) VALUES (@customerId, @logType, @details, @logDate)";
-            MySqlParameter[] parameters = {
-                new MySqlParameter("@customerId", customerId.HasValue ? (object)customerId.Value : DBNull.Value),
-                new MySqlParameter("@logType", logType),
-                new MySqlParameter("@details", details),
-                new MySqlParameter("@logDate", DateTime.Now)
-            };
+		public void LogAction(int? customerId, string logType, string details, int? productId = null)
+		{
+			string query = "INSERT INTO Logs (CustomerID, LogType, LogDetails, LogDate, ProductID) VALUES (@customerId, @logType, @details, @logDate, @productId)";
+			MySqlParameter[] parameters = {
+		new MySqlParameter("@customerId", customerId.HasValue ? (object)customerId.Value : DBNull.Value),
+		new MySqlParameter("@logType", logType),
+		new MySqlParameter("@details", details),
+		new MySqlParameter("@logDate", DateTime.Now),
+		new MySqlParameter("@productId", productId.HasValue ? (object)productId.Value : DBNull.Value)
+	};
 
-            DatabaseHelper.ExecuteNonQuery(query, parameters);
-        }
+			DatabaseHelper.ExecuteNonQuery(query, parameters);
+		}
 
-        private void StartOrderProcessing()
+
+		private void StartOrderProcessing()
         {
             orderProcessingThread = new Thread(ProcessOrders) { IsBackground = true };
             orderProcessingThread.Start();
@@ -361,44 +372,57 @@ namespace OrderStockManagement
 
 		}
 
-		private void deleteCustomerButton_Click(object sender, EventArgs e)
+
+		private void deleteProductButton_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				// Silinecek müşteri ID'sini seçmek için bir kontrol yapalım.
-				if (customersGridView.SelectedRows.Count == 0)
+				// Checkbox'ı işaretli olan ürünlerin ID'lerini topla
+				List<int> productIdsToDelete = new List<int>();
+
+				foreach (DataGridViewRow row in productsGridView.Rows)
 				{
-					MessageBox.Show("Lütfen silmek istediğiniz müşteriyi seçin.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					// Eğer checkbox işaretliyse
+					bool isChecked = Convert.ToBoolean(row.Cells["checkBoxColumn"].Value);
+					if (isChecked)
+					{
+						int productId = Convert.ToInt32(row.Cells["ProductID"].Value);
+						productIdsToDelete.Add(productId);
+					}
+				}
+
+				if (productIdsToDelete.Count == 0)
+				{
+					MessageBox.Show("Lütfen silmek istediğiniz ürünleri seçin.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 					return;
 				}
 
-				// Seçilen müşteri ID'sini alıyoruz
-				int customerId = Convert.ToInt32(customersGridView.SelectedRows[0].Cells["CustomerID"].Value);
+				foreach (int productId in productIdsToDelete)
+				{
+					// Ürünü veritabanından sil
+					string query = "DELETE FROM Products WHERE ProductID = @productId";
+					MySqlParameter[] parameters = {
+				new MySqlParameter("@productId", productId)
+			};
+					DatabaseHelper.ExecuteNonQuery(query, parameters);
 
-				// Silme işlemi için SQL sorgusu hazırlıyoruz
-				string query = "DELETE FROM Customers WHERE CustomerID = @customerId";
+					// Log tablosuna ürün silindi bilgisini yaz
+					LogAction(null, "Info", $"Ürün silindi. ProductID: {productId}", productId);
+				}
 
-				// Parametrelerimizi hazırlıyoruz
-				MySqlParameter[] parameters = {
-			new MySqlParameter("@customerId", customerId)
-		};
+				// Arayüzü güncelle
+				LoadProducts();
+				LoadLogs();
 
-				// Veritabanında silme işlemini gerçekleştiriyoruz
-				DatabaseHelper.ExecuteNonQuery(query, parameters);
-
-				// Log kaydı ekleme (isteğe bağlı)
-				Form1 frmbir = (Form1)Application.OpenForms["Form1"];
-				frmbir.LogAction(customerId, "Info", $"Müşteri silindi. CustomerID: {customerId}");
-
-				// Müşteri listesini güncelleme
-				frmbir.LoadCustomers();
-
-				MessageBox.Show("Müşteri başarıyla silindi!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				string deletedProducts = string.Join(", ", productIdsToDelete);
+				MessageBox.Show($"Ürünler başarıyla silindi! Silinen ürünler: {deletedProducts}", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Müşteri silme sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Ürün silme sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
+
+
 	}
 }

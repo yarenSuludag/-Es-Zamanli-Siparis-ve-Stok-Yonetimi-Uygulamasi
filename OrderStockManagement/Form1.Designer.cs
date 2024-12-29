@@ -129,7 +129,7 @@
 			this.logsGridView.Margin = new System.Windows.Forms.Padding(4);
 			this.logsGridView.Name = "logsGridView";
 			this.logsGridView.RowHeadersWidth = 51;
-			this.logsGridView.Size = new System.Drawing.Size(737, 212);
+			this.logsGridView.Size = new System.Drawing.Size(927, 212);
 			this.logsGridView.TabIndex = 15;
 			// 
 			// addCustomerButton
@@ -156,7 +156,7 @@
 			// 
 			this.orderQueueGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
 			this.orderQueueGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.orderQueueGridView.Location = new System.Drawing.Point(840, 424);
+			this.orderQueueGridView.Location = new System.Drawing.Point(967, 424);
 			this.orderQueueGridView.Name = "orderQueueGridView";
 			this.orderQueueGridView.RowHeadersWidth = 51;
 			this.orderQueueGridView.Size = new System.Drawing.Size(255, 212);
@@ -164,7 +164,7 @@
 			// 
 			// label4
 			// 
-			this.label4.Location = new System.Drawing.Point(837, 393);
+			this.label4.Location = new System.Drawing.Point(964, 393);
 			this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(133, 28);
@@ -198,6 +198,7 @@
 			this.deleteProductButton.Size = new System.Drawing.Size(150, 37);
 			this.deleteProductButton.TabIndex = 33;
 			this.deleteProductButton.Text = "Ürün Sil";
+			this.deleteProductButton.Click += new System.EventHandler(this.deleteProductButton_Click);
 			// 
 			// Form1
 			// 

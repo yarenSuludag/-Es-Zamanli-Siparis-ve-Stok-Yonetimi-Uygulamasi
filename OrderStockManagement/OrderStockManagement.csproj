@@ -122,6 +122,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form_DEMO.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_DEMO.Designer.cs">
+      <DependentUpon>Form_DEMO.cs</DependentUpon>
+    </Compile>
     <Compile Include="Frm_Giris.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,11 +140,23 @@
     <Compile Include="Frm_Musteri.Designer.cs">
       <DependentUpon>Frm_Musteri.cs</DependentUpon>
     </Compile>
+    <Compile Include="Frm_M_ekle.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frm_M_ekle.Designer.cs">
+      <DependentUpon>Frm_M_ekle.cs</DependentUpon>
+    </Compile>
     <Compile Include="Frm_M_Giris.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Frm_M_Giris.Designer.cs">
       <DependentUpon>Frm_M_Giris.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frm_Urun_ekle.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frm_Urun_ekle.Designer.cs">
+      <DependentUpon>Frm_Urun_ekle.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\Customer.cs" />
     <Compile Include="Models\Order.cs" />
@@ -148,14 +166,23 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Form_DEMO.resx">
+      <DependentUpon>Form_DEMO.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Frm_Giris.resx">
       <DependentUpon>Frm_Giris.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Frm_Musteri.resx">
       <DependentUpon>Frm_Musteri.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Frm_M_ekle.resx">
+      <DependentUpon>Frm_M_ekle.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Frm_M_Giris.resx">
       <DependentUpon>Frm_M_Giris.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frm_Urun_ekle.resx">
+      <DependentUpon>Frm_Urun_ekle.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -30,7 +31,16 @@ namespace OrderStockManagement
             LoadProducts();
             LoadLogs();
             UpdateOrderQueueDisplay();
-        }
+
+			customersGridView.MultiSelect = true;
+			customersGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+			DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
+			checkColumn.HeaderText = "Seç";
+			checkColumn.Name = "checkBoxColumn";
+			checkColumn.Width = 30;
+			checkColumn.ReadOnly = false;
+			customersGridView.Columns.Insert(0, checkColumn);
+		}
 
         private void CustomizeUI()
         {
@@ -90,13 +100,13 @@ namespace OrderStockManagement
             MessageBox.Show("Başlık tıklandı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void LoadCustomers()
+        public void LoadCustomers()
         {
             string query = "SELECT * FROM Customers ORDER BY CustomerType DESC, CustomerID ASC";
             customersGridView.DataSource = DatabaseHelper.ExecuteQuery(query);
         }
 
-		private void LoadProducts()
+		public void LoadProducts()
 		{
 			string query = "SELECT * FROM Products";
 			DataTable productsTable = DatabaseHelper.ExecuteQuery(query);
@@ -117,7 +127,7 @@ namespace OrderStockManagement
 		}
 
 
-		private void LoadLogs()
+		public void LoadLogs()
 		{
 			try
 			{
@@ -154,40 +164,6 @@ namespace OrderStockManagement
                         row.DefaultCellStyle.BackColor = Color.LightCoral;
                     }
                 }
-            }
-        }
-
-        private void PlaceOrderButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Girişlerden alınan müşteri ve ürün bilgilerini al
-                int customerId = int.Parse(orderCustomerIdTextBox.Text);
-                int productId = int.Parse(orderProductIdTextBox.Text);
-                int quantity = int.Parse(orderQuantityTextBox.Text);
-
-                // Sipariş listesine ekle
-                lock (orderQueue)
-                {
-                    orderQueue.Add(new Order(customerId, productId, quantity));
-                }
-
-                // İşlem log kaydı oluştur
-                LogAction(customerId, "Info", "Sipariş sıraya alındı.");
-
-                // Sipariş listesini güncelle
-                UpdateOrderQueueDisplay();
-
-                // Kullanıcıya bilgi mesajı göster
-                MessageBox.Show("Sipariş sıraya alındı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (FormatException)
-            {
-                MessageBox.Show("Lütfen geçerli ürün ID ve miktar bilgisi girin.", "Geçersiz Giriş", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Sipariş ekleme sırasında bir hata oluştu: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -320,69 +296,17 @@ namespace OrderStockManagement
 
         private void AddProductButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string productName = productNameTextBox.Text;
-                int stock = int.Parse(productStockTextBox.Text);
-                float price = float.Parse(productPriceTextBox.Text);
-
-                if (string.IsNullOrWhiteSpace(productName) || stock <= 0 || price <= 0)
-                {
-                    MessageBox.Show("Lütfen geçerli ürün bilgilerini girin!", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                string query = "INSERT INTO Products (ProductName, Stock, Price) VALUES (@productName, @stock, @price)";
-                MySqlParameter[] parameters = {
-                    new MySqlParameter("@productName", productName),
-                    new MySqlParameter("@stock", stock),
-                    new MySqlParameter("@price", price)
-                };
-
-                DatabaseHelper.ExecuteNonQuery(query, parameters);
-
-                LogAction(null, "Info", $"Yeni ürün eklendi: {productName}");
-                LoadProducts();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ürün ekleme sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            Frm_Urun_ekle frm = new Frm_Urun_ekle();
+            frm.Show();
         }
 
         private void AddCustomerButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string customerName = customerNameTextBox.Text;
-                float budget = float.Parse(customerBudgetTextBox.Text);
-                string customerType = customerTypeComboBox.SelectedItem?.ToString();
-
-                if (string.IsNullOrWhiteSpace(customerName) || budget <= 0 || string.IsNullOrWhiteSpace(customerType))
-                {
-                    MessageBox.Show("Lütfen geçerli müşteri bilgilerini girin!", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                string query = "INSERT INTO Customers (CustomerName, Budget, CustomerType, TotalSpent) VALUES (@customerName, @budget, @customerType, 0)";
-                MySqlParameter[] parameters = {
-                    new MySqlParameter("@customerName", customerName),
-                    new MySqlParameter("@budget", budget),
-                    new MySqlParameter("@customerType", customerType)
-                };
-
-                DatabaseHelper.ExecuteNonQuery(query, parameters);
-
-                LogAction(null, "Info", $"Yeni müşteri eklendi: {customerName}");
-                LoadCustomers();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Müşteri ekleme sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            Frm_M_ekle frm = new Frm_M_ekle();
+            frm.Show();
         }
 
-        private void LogAction(int? customerId, string logType, string details)
+        public void LogAction(int? customerId, string logType, string details)
         {
             string query = "INSERT INTO Logs (CustomerID, LogType, LogDetails, LogDate) VALUES (@customerId, @logType, @details, @logDate)";
             MySqlParameter[] parameters = {
@@ -435,6 +359,46 @@ namespace OrderStockManagement
 		private void orderCustomerIdLabel_Click(object sender, EventArgs e)
 		{
 
+		}
+
+		private void deleteCustomerButton_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				// Silinecek müşteri ID'sini seçmek için bir kontrol yapalım.
+				if (customersGridView.SelectedRows.Count == 0)
+				{
+					MessageBox.Show("Lütfen silmek istediğiniz müşteriyi seçin.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					return;
+				}
+
+				// Seçilen müşteri ID'sini alıyoruz
+				int customerId = Convert.ToInt32(customersGridView.SelectedRows[0].Cells["CustomerID"].Value);
+
+				// Silme işlemi için SQL sorgusu hazırlıyoruz
+				string query = "DELETE FROM Customers WHERE CustomerID = @customerId";
+
+				// Parametrelerimizi hazırlıyoruz
+				MySqlParameter[] parameters = {
+			new MySqlParameter("@customerId", customerId)
+		};
+
+				// Veritabanında silme işlemini gerçekleştiriyoruz
+				DatabaseHelper.ExecuteNonQuery(query, parameters);
+
+				// Log kaydı ekleme (isteğe bağlı)
+				Form1 frmbir = (Form1)Application.OpenForms["Form1"];
+				frmbir.LogAction(customerId, "Info", $"Müşteri silindi. CustomerID: {customerId}");
+
+				// Müşteri listesini güncelleme
+				frmbir.LoadCustomers();
+
+				MessageBox.Show("Müşteri başarıyla silindi!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Müşteri silme sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 	}
 }

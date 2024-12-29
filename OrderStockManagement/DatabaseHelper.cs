@@ -6,7 +6,7 @@ namespace OrderStockManagement
 {
     public static class DatabaseHelper
     {
-        private static string connectionString = "Server=localhost;Database=OrderStockManagement;Uid=root;Pwd=fb123456;";
+        private static string connectionString = "Server=localhost;Database=OrderStockManagement;Uid=root;Pwd=11092001;";
 
         public static MySqlConnection GetConnection()
         {

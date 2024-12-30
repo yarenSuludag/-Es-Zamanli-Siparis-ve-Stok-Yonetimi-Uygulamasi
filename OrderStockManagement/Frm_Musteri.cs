@@ -15,10 +15,14 @@ namespace OrderStockManagement
 	public partial class Frm_Musteri : Form
 	{
 
+		private readonly Form1 frm1;
 		private readonly List<Order> orderQueue = new List<Order>();
-		public Frm_Musteri()
+		public int CustomerId { get; set; } 
+		public Frm_Musteri(Form1 form1, List<Order> sharedOrderQueue)
 		{
 			InitializeComponent();
+			frm1 = form1;
+			orderQueue = sharedOrderQueue;
 		}
 
 		public string M_id;
@@ -58,6 +62,7 @@ namespace OrderStockManagement
 
 
 			LoadProducts();
+			
 		}
 
 
@@ -79,11 +84,13 @@ namespace OrderStockManagement
             }
 
         }
-                
 
-        private void placeOrderButton_Click_1(object sender, EventArgs e)
+		
+
+
+		private void placeOrderButton_Click_1(object sender, EventArgs e)
         {
-			Form1 frm1 = (Form1)Application.OpenForms["Form1"];
+			
 			try
             {
                 int customerId = int.Parse(LblNo.Text);
@@ -99,14 +106,14 @@ namespace OrderStockManagement
                 }
 
                 // Ürün stok kontrolü
-                int currentStock = GetProductStockById(productId);
-                if (currentStock < quantity)
-                {
-                    string errorMessage = "Ürün stoğu yetersiz.";
-					frm1.LogAction(customerId, "Error", errorMessage);
-                    MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+     //           int currentStock = GetProductStockById(productId);
+     //           if (currentStock < quantity)
+     //           {
+     //               string errorMessage = "Ürün stoğu yetersiz.";
+					//frm1.LogAction(customerId, "Error", errorMessage);
+     //               MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+     //               return;
+     //           }
 
                 // Müşteri bakiye kontrolü (Budget)
                 decimal productPrice = GetProductPriceById(productId);
@@ -121,18 +128,20 @@ namespace OrderStockManagement
                     return;
                 }
 
-                // Sipariş listesine ekle
-                lock (orderQueue)
-                {
-                    orderQueue.Add(new Order(customerId, productId, quantity));
-                }
+				// Sipariş listesine ekle
+				lock (orderQueue)
+				{
+					orderQueue.Add(new Order(customerId, productId, quantity));
+					frm1.AddOrderToDatabase(new Order(customerId, productId, quantity));
+				}
 
-                // Log kaydı oluştur
-                frm1.LogAction(customerId, "Info", $"Sipariş sıraya alındı: Ürün ID: {productId}, Miktar: {quantity}");
+				// Log kaydı oluştur
+				frm1.LogAction(customerId, "Info", $"Sipariş sıraya alındı: Ürün ID: {productId}, Miktar: {quantity}", productId);
+				frm1.UpdateOrderQueueDisplay();
+				UpdateOrderQueueDisplay();
 
-
-                // Kullanıcıya bilgi mesajı göster
-                MessageBox.Show("Sipariş sıraya alındı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				// Kullanıcıya bilgi mesajı göster
+				MessageBox.Show("Sipariş sıraya alındı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (FormatException)
             {
@@ -177,47 +186,96 @@ namespace OrderStockManagement
         }
 
 
-        private int GetProductStockById(int productId)
-        {
-            string query = "SELECT Stock FROM products WHERE ProductID = @productId";
-            using (MySqlConnection connection = DatabaseHelper.GetConnection())
-            using (MySqlCommand command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@productId", productId);
-                connection.Open();
-                var result = command.ExecuteScalar();
-                return result != null ? Convert.ToInt32(result) : 0;
-            }
-        }
-
-
-
-
-
-  //      private void UpdateOrderQueueDisplay()
+		//private int GetProductStockById(int productId)
 		//{
-		//	lock (orderQueue)
-		//	{
-		//		var dataSource = orderQueue
-		//			.Select(o => new { o.ProductId, ProductName = GetProductNameById(o.ProductId), o.Quantity, o.Priority })
-		//			.OrderByDescending(o => o.Priority)
-		//			.ToList();
-
-		//		if (siparisdataGridView.InvokeRequired)
-		//		{
-		//			siparisdataGridView.Invoke(new Action(() =>
-		//			{
-		//				siparisdataGridView.DataSource = dataSource;
-		//			}));
-		//		}
-		//		else
-		//		{
-		//			siparisdataGridView.DataSource = dataSource;
-		//		}
-		//	}
+		//    string query = "SELECT Stock FROM products WHERE ProductID = @productId";
+		//    using (MySqlConnection connection = DatabaseHelper.GetConnection())
+		//    using (MySqlCommand command = new MySqlCommand(query, connection))
+		//    {
+		//        command.Parameters.AddWithValue("@productId", productId);
+		//        connection.Open();
+		//        var result = command.ExecuteScalar();
+		//        return result != null ? Convert.ToInt32(result) : 0;
+		//    }
 		//}
 
-		
+
+		private string GetProductNameById(int productId)
+		{
+			string query = "SELECT ProductName FROM products WHERE ProductID = @productId";
+			using (MySqlConnection connection = DatabaseHelper.GetConnection())
+			using (MySqlCommand command = new MySqlCommand(query, connection))
+			{
+				command.Parameters.AddWithValue("@productId", productId);
+				connection.Open();
+				var result = command.ExecuteScalar();
+				return result != null ? result.ToString() : "Bilinmiyor";
+			}
+		}
+
+
+
+
+		private void UpdateOrderQueueDisplay()
+		{
+			lock (orderQueue)
+			{
+				DataTable dataTable = siparisdataGridView.DataSource as DataTable ?? new DataTable();
+
+				// Eğer tablo ilk kez oluşturuluyorsa kolonları tanımla
+				if (dataTable.Columns.Count == 0)
+				{
+					dataTable.Columns.Add("ProductId", typeof(int));
+					dataTable.Columns.Add("ProductName", typeof(string));
+					dataTable.Columns.Add("Quantity", typeof(int));
+					dataTable.Columns.Add("ProductPrice", typeof(decimal));
+					dataTable.Columns.Add("TotalCost", typeof(decimal));
+				}
+
+				// Sıradaki her siparişi tabloya ekle ve log oluştur
+				foreach (var order in orderQueue)
+				{
+					// Eğer sipariş zaten tabloda varsa ekleme
+					if (dataTable.Rows.Cast<DataRow>().Any(row => (int)row["ProductId"] == order.ProductId))
+						continue;
+
+					// Yeni siparişi tabloya ekle
+					dataTable.Rows.Add(
+						order.ProductId,
+						GetProductNameById(order.ProductId),
+						order.Quantity,
+						GetProductPriceById(order.ProductId),
+						order.Quantity * GetProductPriceById(order.ProductId)
+					);
+
+					// Log kaydı oluştur
+					frm1.LogAction(
+						order.CustomerId,
+						"Info",
+						$"Log: Sipariş listesine eklendi - Ürün ID: {order.ProductId}, Miktar: {order.Quantity}",
+						order.ProductId
+					);
+				}
+
+				// DataGridView'i güncelle
+				if (siparisdataGridView.InvokeRequired)
+				{
+					siparisdataGridView.Invoke(new Action(() =>
+					{
+						siparisdataGridView.DataSource = dataTable;
+					}));
+				}
+				else
+				{
+					siparisdataGridView.DataSource = dataTable;
+				}
+			}
+		}
+
+
+
+
+
 		private void Frm_Musteri_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			Frm_Giris fr =new Frm_Giris();

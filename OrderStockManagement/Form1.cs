@@ -14,8 +14,8 @@ namespace OrderStockManagement
     public partial class Form1 : Form
     {
         private readonly object lockObject = new object();
-        private readonly List<Order> orderQueue = new List<Order>();
-        private Thread orderProcessingThread;
+        public readonly List<Order> orderQueue = new List<Order>();
+		private Thread orderProcessingThread;
 
         public Form1()
         {
@@ -53,6 +53,15 @@ namespace OrderStockManagement
 			productsGridView.Columns.Insert(0, checkColumn2);
 
 			//productsGridView.ReadOnly=true;
+
+			orderQueueGridView.MultiSelect = true;
+			orderQueueGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+			DataGridViewCheckBoxColumn checkColumn3 = new DataGridViewCheckBoxColumn();
+			checkColumn3.HeaderText = "Seç";
+			checkColumn3.Name = "checkBoxColumn3";
+			checkColumn3.Width = 30;
+			checkColumn3.ReadOnly = false;
+			orderQueueGridView.Columns.Insert(0, checkColumn3);
 		}
 
 		private void CustomizeUI()
@@ -183,34 +192,73 @@ namespace OrderStockManagement
 
 
 
-        private void UpdateOrderQueueDisplay()
-        {
-            try
-            {
-                string query = "SELECT OrderID, CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus FROM Orders";
-                DataTable ordersTable = DatabaseHelper.ExecuteQuery(query);
+		public void UpdateOrderQueueDisplay()
+		{
+			try
+			{
+				string query = "SELECT OrderID, CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus FROM Orders";
+				DataTable ordersTable = DatabaseHelper.ExecuteQuery(query);
 
-                if (orderQueueGridView.InvokeRequired)
-                {
-                    orderQueueGridView.Invoke(new Action(() =>
-                    {
-                        orderQueueGridView.DataSource = ordersTable;
-                    }));
-                }
-                else
-                {
-                    orderQueueGridView.DataSource = ordersTable;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Sipariş listesi yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+				if (orderQueueGridView.InvokeRequired)
+				{
+					// UI iş parçacığında güncelleme
+					orderQueueGridView.Invoke(new Action(() =>
+					{
+						orderQueueGridView.DataSource = ordersTable;
+					}));
+				}
+				else
+				{
+					orderQueueGridView.DataSource = ordersTable;
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Sipariş listesi yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
 
 
 
-        private string GetCustomerNameById(int customerId)
+
+
+		public void AddOrderToDatabase(Order order)
+		{
+			string query = "INSERT INTO Orders (CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus) " +
+						   "VALUES (@customerId, @productId, @quantity, @totalPrice, @orderDate, @orderStatus)";
+			MySqlParameter[] parameters = {
+		new MySqlParameter("@customerId", order.CustomerId),
+		new MySqlParameter("@productId", order.ProductId),
+		new MySqlParameter("@quantity", order.Quantity),
+		new MySqlParameter("@totalPrice", order.Quantity * GetProductPriceById(order.ProductId)),
+		new MySqlParameter("@orderDate", DateTime.Now),
+		new MySqlParameter("@orderStatus", "Pending")
+	};
+
+			DatabaseHelper.ExecuteNonQuery(query, parameters);
+		}
+
+
+		private decimal GetProductPriceById(int productId)
+		{
+			string query = "SELECT Price FROM products WHERE ProductID = @productId";
+			using (MySqlConnection connection = DatabaseHelper.GetConnection())
+			using (MySqlCommand command = new MySqlCommand(query, connection))
+			{
+				command.Parameters.AddWithValue("@productId", productId);
+				connection.Open();
+				var result = command.ExecuteScalar();
+				return result != null ? Convert.ToDecimal(result) : 0m;
+			}
+		}
+
+
+
+
+
+
+
+		private string GetCustomerNameById(int customerId)
         {
             string query = "SELECT CustomerName FROM customers WHERE CustomerID = @customerId";
             using (MySqlConnection connection = DatabaseHelper.GetConnection())
@@ -249,33 +297,33 @@ namespace OrderStockManagement
             }
         }
 
-        private void ApproveAllOrders()
-        {
-            lock (orderQueue)
-            {
-                while (orderQueue.Count > 0)
-                {
-                    var order = orderQueue[0];
-                    orderQueue.RemoveAt(0); // İlk siparişi çıkar
+        //private void ApproveAllOrders()
+        //{
+        //    lock (orderQueue)
+        //    {
+        //        while (orderQueue.Count > 0)
+        //        {
+        //            var order = orderQueue[0];
+        //            orderQueue.RemoveAt(0); // İlk siparişi çıkar
 
-                    ProcessOrder(order); // Siparişi işle
-                }
-            }
+        //            ProcessOrder(order); // Siparişi işle
+        //        }
+        //    }
 
-            MessageBox.Show("Tüm siparişler başarıyla onaylandı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //    MessageBox.Show("Tüm siparişler başarıyla onaylandı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // Sipariş listesi güncelleme ve animasyon
-            UpdateOrderQueueDisplay();
-            AnimateOrderQueue();
-        }
-
-
+        //    // Sipariş listesi güncelleme ve animasyon
+        //    UpdateOrderQueueDisplay();
+        //    AnimateOrderQueue();
+        //}
 
 
-        private void approveAllButton_Click(object sender, EventArgs e)
-        {
-            ApproveAllOrders();
-        }
+
+
+        //private void approveAllButton_Click(object sender, EventArgs e)
+        //{
+        //    ApproveAllOrders();
+        //}
 
 
         private void ProcessOrders()
@@ -417,19 +465,10 @@ namespace OrderStockManagement
             orderProcessingThread.Start();
         }
 
-        private void productNameTextBox_TextChanged(object sender, EventArgs e) { }
-        private void customerBudgetTextBox_TextChanged(object sender, EventArgs e) { }
-        private void customerNameTextBox_TextChanged(object sender, EventArgs e) { }
-        private void productStockTextBox_TextChanged(object sender, EventArgs e) { }
-        private void productPriceTextBox_TextChanged(object sender, EventArgs e) { }
-        private void label1_Click(object sender, EventArgs e) { }
-        private void customerNameLabel_Click(object sender, EventArgs e) { }
+        
+        
         private void logLabel_Click(object sender, EventArgs e) { }
 
-		private void customerTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
-		{
-
-		}
 
 		private void customersGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
 		{
@@ -448,10 +487,7 @@ namespace OrderStockManagement
 
 		}
 
-		private void orderCustomerIdLabel_Click(object sender, EventArgs e)
-		{
-
-		}
+		
 
 
 		private void deleteProductButton_Click(object sender, EventArgs e)

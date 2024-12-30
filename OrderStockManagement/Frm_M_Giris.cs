@@ -34,10 +34,23 @@ namespace OrderStockManagement
 
 				if (result.Rows.Count > 0)
 				{
+					Form1 formMain = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+
+					if (formMain == null)
+					{
+						// Form1 açık değilse yeni bir örnek oluştur
+						formMain = new Form1();
+					}
+
 					
-					Frm_Musteri fr = new Frm_Musteri();
-					fr.M_id = Msk_M_Id.Text;
-					fr.Show();
+					Frm_Musteri frmMusteri = new Frm_Musteri(formMain, formMain.orderQueue)
+					{
+						M_id = Msk_M_Id.Text 
+					};
+
+					
+					frmMusteri.Show();
+
 					this.Hide();
 				}
 				else

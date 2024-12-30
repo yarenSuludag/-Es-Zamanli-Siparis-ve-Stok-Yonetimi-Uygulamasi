@@ -68,7 +68,7 @@ namespace OrderStockManagement
 
         private void LoadProducts()
         {
-            string query = "SELECT ProductID, ProductName, Price FROM Products";
+            string query = "SELECT ProductID, ProductName, Price, Stock FROM Products";
             DataTable productsTable = DatabaseHelper.ExecuteQuery(query);
 
             if (m_productsGridView.InvokeRequired)
@@ -85,54 +85,51 @@ namespace OrderStockManagement
 
         }
 
-		
+
 
 
 		private void placeOrderButton_Click_1(object sender, EventArgs e)
-        {
-			
+		{
 			try
-            {
-                int customerId = int.Parse(LblNo.Text);
-                int productId = int.Parse(orderProductIdTextBox.Text);
-                int quantity = int.Parse(orderQuantityTextBox.Text);
+			{
+				int customerId = int.Parse(LblNo.Text);
+				int productId = int.Parse(orderProductIdTextBox.Text);
+				int quantity = int.Parse(orderQuantityTextBox.Text);
 
-                if (quantity > 5)
-                {
-                    string errorMessage = "Müşteri 5'ten fazla ürün sipariş edemez.";
+				if (quantity > 5)
+				{
+					string errorMessage = "Müşteri 5'ten fazla ürün sipariş edemez.";
 					frm1.LogAction(customerId, "Error", errorMessage);
-                    MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+					MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
 
-                // Ürün stok kontrolü
-     //           int currentStock = GetProductStockById(productId);
-     //           if (currentStock < quantity)
-     //           {
-     //               string errorMessage = "Ürün stoğu yetersiz.";
-					//frm1.LogAction(customerId, "Error", errorMessage);
-     //               MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-     //               return;
-     //           }
+				// Ürün ve müşteri bilgilerini kontrol et
+				int currentStock = GetProductStockById(productId);
+				decimal productPrice = GetProductPriceById(productId);
+				decimal totalCost = productPrice * quantity;
+				decimal customerBudget = GetCustomerBalance(customerId);
 
-                // Müşteri bakiye kontrolü (Budget)
-                decimal productPrice = GetProductPriceById(productId);
-                decimal totalCost = productPrice * quantity;
-                decimal customerBudget = GetCustomerBalance(customerId);
+				if (currentStock < quantity)
+				{
+					string errorMessage = "Ürün stoğu yetersiz.";
+					frm1.LogAction(customerId, "Error", errorMessage);
+					MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
 
-                if (customerBudget < totalCost)
-                {
-                    string errorMessage = "Müşteri bakiyesi (budget) yetersiz.";
+				if (customerBudget < totalCost)
+				{
+					string errorMessage = "Müşteri bakiyesi yetersiz.";
 					frm1.LogAction(customerId, "Error", $"{errorMessage} | Gerekli Bakiye: {totalCost:C}, Mevcut Bakiye: {customerBudget:C}");
-                    MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+					MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
 
-				// Sipariş listesine ekle
+				// Siparişi sıraya ekle (fiziksel değişiklik yapılmaz!)
 				lock (orderQueue)
 				{
 					orderQueue.Add(new Order(customerId, productId, quantity));
-					frm1.AddOrderToDatabase(new Order(customerId, productId, quantity));
 				}
 
 				// Log kaydı oluştur
@@ -140,24 +137,26 @@ namespace OrderStockManagement
 				frm1.UpdateOrderQueueDisplay();
 				UpdateOrderQueueDisplay();
 
-				// Kullanıcıya bilgi mesajı göster
-				MessageBox.Show("Sipariş sıraya alındı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (FormatException)
-            {
-                MessageBox.Show("Lütfen geçerli ürün ID ve miktar bilgisi girin.", "Geçersiz Giriş", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = $"Sipariş ekleme sırasında bir hata oluştu: {ex.Message}";
-                frm1.LogAction(null, "Error", errorMessage);
-                MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+				// Bilgi mesajı göster
+				MessageBox.Show("Sipariş sıraya alındı! Onay bekleniyor.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			catch (FormatException)
+			{
+				MessageBox.Show("Lütfen geçerli ürün ID ve miktar bilgisi girin.", "Geçersiz Giriş", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = $"Sipariş ekleme sırasında bir hata oluştu: {ex.Message}";
+				frm1.LogAction(null, "Error", errorMessage);
+				MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
 
 
 
-        private decimal GetProductPriceById(int productId)
+
+
+		private decimal GetProductPriceById(int productId)
         {
             string query = "SELECT Price FROM products WHERE ProductID = @productId";
             using (MySqlConnection connection = DatabaseHelper.GetConnection())
@@ -186,18 +185,18 @@ namespace OrderStockManagement
         }
 
 
-		//private int GetProductStockById(int productId)
-		//{
-		//    string query = "SELECT Stock FROM products WHERE ProductID = @productId";
-		//    using (MySqlConnection connection = DatabaseHelper.GetConnection())
-		//    using (MySqlCommand command = new MySqlCommand(query, connection))
-		//    {
-		//        command.Parameters.AddWithValue("@productId", productId);
-		//        connection.Open();
-		//        var result = command.ExecuteScalar();
-		//        return result != null ? Convert.ToInt32(result) : 0;
-		//    }
-		//}
+		private int GetProductStockById(int productId)
+		{
+			string query = "SELECT Stock FROM products WHERE ProductID = @productId";
+			using (MySqlConnection connection = DatabaseHelper.GetConnection())
+			using (MySqlCommand command = new MySqlCommand(query, connection))
+			{
+				command.Parameters.AddWithValue("@productId", productId);
+				connection.Open();
+				var result = command.ExecuteScalar();
+				return result != null ? Convert.ToInt32(result) : 0;
+			}
+		}
 
 
 		private string GetProductNameById(int productId)

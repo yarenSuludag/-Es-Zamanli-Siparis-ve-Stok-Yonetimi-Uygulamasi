@@ -55,7 +55,6 @@
 			this.editProductButton = new System.Windows.Forms.Button();
 			this.deleteProductButton = new System.Windows.Forms.Button();
 			this.BtnOnay = new System.Windows.Forms.Button();
-			this.BtnIptal = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.customersGridView)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.productsGridView)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.logsGridView)).BeginInit();
@@ -207,28 +206,19 @@
 			// 
 			// BtnOnay
 			// 
-			this.BtnOnay.Location = new System.Drawing.Point(729, 653);
+			this.BtnOnay.Location = new System.Drawing.Point(870, 643);
 			this.BtnOnay.Margin = new System.Windows.Forms.Padding(4);
 			this.BtnOnay.Name = "BtnOnay";
 			this.BtnOnay.Size = new System.Drawing.Size(201, 37);
 			this.BtnOnay.TabIndex = 34;
 			this.BtnOnay.Text = "Sipariş Onayla";
-			// 
-			// BtnIptal
-			// 
-			this.BtnIptal.Location = new System.Drawing.Point(949, 653);
-			this.BtnIptal.Margin = new System.Windows.Forms.Padding(4);
-			this.BtnIptal.Name = "BtnIptal";
-			this.BtnIptal.Size = new System.Drawing.Size(197, 37);
-			this.BtnIptal.TabIndex = 35;
-			this.BtnIptal.Text = "Sipariş iptal";
+			this.BtnOnay.Click += new System.EventHandler(this.BtnOnay_Click);
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1250, 738);
-			this.Controls.Add(this.BtnIptal);
 			this.Controls.Add(this.BtnOnay);
 			this.Controls.Add(this.deleteProductButton);
 			this.Controls.Add(this.editProductButton);
@@ -261,6 +251,5 @@
 		private System.Windows.Forms.Button editProductButton;
 		private System.Windows.Forms.Button deleteProductButton;
 		private System.Windows.Forms.Button BtnOnay;
-		private System.Windows.Forms.Button BtnIptal;
 	}
 }

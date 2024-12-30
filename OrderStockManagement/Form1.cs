@@ -53,15 +53,6 @@ namespace OrderStockManagement
 			productsGridView.Columns.Insert(0, checkColumn2);
 
 			//productsGridView.ReadOnly=true;
-
-			orderQueueGridView.MultiSelect = true;
-			orderQueueGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-			DataGridViewCheckBoxColumn checkColumn3 = new DataGridViewCheckBoxColumn();
-			checkColumn3.HeaderText = "Seç";
-			checkColumn3.Name = "checkBoxColumn3";
-			checkColumn3.Width = 30;
-			checkColumn3.ReadOnly = false;
-			orderQueueGridView.Columns.Insert(0, checkColumn3);
 		}
 
 		private void CustomizeUI()
@@ -297,33 +288,6 @@ namespace OrderStockManagement
             }
         }
 
-        //private void ApproveAllOrders()
-        //{
-        //    lock (orderQueue)
-        //    {
-        //        while (orderQueue.Count > 0)
-        //        {
-        //            var order = orderQueue[0];
-        //            orderQueue.RemoveAt(0); // İlk siparişi çıkar
-
-        //            ProcessOrder(order); // Siparişi işle
-        //        }
-        //    }
-
-        //    MessageBox.Show("Tüm siparişler başarıyla onaylandı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-        //    // Sipariş listesi güncelleme ve animasyon
-        //    UpdateOrderQueueDisplay();
-        //    AnimateOrderQueue();
-        //}
-
-
-
-
-        //private void approveAllButton_Click(object sender, EventArgs e)
-        //{
-        //    ApproveAllOrders();
-        //}
 
 
         private void ProcessOrders()
@@ -610,5 +574,99 @@ namespace OrderStockManagement
             }
         }
 
-    }
+		private void BtnOnay_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				foreach (var order in orderQueue.ToList()) // Sıradaki tüm siparişler için işlem
+				{
+					// Ürün bilgilerini kontrol et
+					string productQuery = "SELECT Stock, Price FROM Products WHERE ProductID = @productId";
+					MySqlParameter[] productParams = { new MySqlParameter("@productId", order.ProductId) };
+					DataTable productData = DatabaseHelper.ExecuteQuery(productQuery, productParams);
+
+					if (productData.Rows.Count == 0)
+					{
+						LogAction(order.CustomerId, "Error", "Ürün bulunamadı.");
+						continue;
+					}
+
+					int stock = Convert.ToInt32(productData.Rows[0]["Stock"]);
+					decimal price = Convert.ToDecimal(productData.Rows[0]["Price"]);
+					decimal totalPrice = price * order.Quantity;
+
+					// Müşteri bilgilerini kontrol et
+					string customerQuery = "SELECT Budget FROM Customers WHERE CustomerID = @customerId";
+					MySqlParameter[] customerParams = { new MySqlParameter("@customerId", order.CustomerId) };
+					DataTable customerData = DatabaseHelper.ExecuteQuery(customerQuery, customerParams);
+
+					if (customerData.Rows.Count == 0)
+					{
+						LogAction(order.CustomerId, "Error", "Müşteri bulunamadı.");
+						continue;
+					}
+
+					decimal budget = Convert.ToDecimal(customerData.Rows[0]["Budget"]);
+
+					// Stok ve bütçe kontrolü
+					if (order.Quantity > stock)
+					{
+						LogAction(order.CustomerId, "Error", "Yetersiz stok.");
+						continue;
+					}
+
+					if (totalPrice > budget)
+					{
+						LogAction(order.CustomerId, "Error", "Yetersiz bütçe.");
+						continue;
+					}
+
+					// Stok güncelle
+					string updateStockQuery = "UPDATE Products SET Stock = Stock - @quantity WHERE ProductID = @productId";
+					MySqlParameter[] updateStockParams = {
+				new MySqlParameter("@quantity", order.Quantity),
+				new MySqlParameter("@productId", order.ProductId)
+			};
+					DatabaseHelper.ExecuteNonQuery(updateStockQuery, updateStockParams);
+
+					// Bütçe güncelle
+					string updateBudgetQuery = "UPDATE Customers SET Budget = Budget - @totalPrice WHERE CustomerID = @customerId";
+					MySqlParameter[] updateBudgetParams = {
+				new MySqlParameter("@totalPrice", totalPrice),
+				new MySqlParameter("@customerId", order.CustomerId)
+			};
+					DatabaseHelper.ExecuteNonQuery(updateBudgetQuery, updateBudgetParams);
+
+					// Sipariş durumu güncelle
+					string updateOrderQuery = "UPDATE Orders SET OrderStatus = 'Approved' WHERE OrderID = @orderId";
+					MySqlParameter[] updateOrderParams = {
+				new MySqlParameter("@orderId", order.OrderId)
+			};
+					DatabaseHelper.ExecuteNonQuery(updateOrderQuery, updateOrderParams);
+
+					// Log kaydı oluştur
+					LogAction(order.CustomerId, "Info", $"Sipariş onaylandı: Ürün ID={order.ProductId}, Miktar={order.Quantity}");
+
+					// İşlenmiş siparişi kuyruktan kaldır
+					lock (orderQueue)
+					{
+						orderQueue.Remove(order);
+					}
+				}
+
+				// Tüm tabloları yenile
+				LoadProducts();
+				LoadCustomers();
+				UpdateOrderQueueDisplay();
+				LoadLogs();
+
+				MessageBox.Show("Tüm siparişler onaylandı ve tablolar güncellendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Sipariş onaylama sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+	}
 }

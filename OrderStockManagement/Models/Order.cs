@@ -4,7 +4,8 @@ namespace OrderStockManagement.Models
 {
     public class Order
     {
-        public int CustomerId { get; set; }
+		public int OrderId { get; set; }
+		public int CustomerId { get; set; }
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public DateTime CreatedAt { get; private set; }
@@ -15,6 +16,7 @@ namespace OrderStockManagement.Models
             ProductId = productId;
             Quantity = quantity;
             CreatedAt = DateTime.Now;
+            
         }
 
         public int Priority

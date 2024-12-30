@@ -9,13 +9,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using OrderStockManagement.Models;
+using FastReport.DataVisualization.Charting;
 
 namespace OrderStockManagement
 {
 	public partial class Frm_Musteri : Form
 	{
-
-		private readonly Form1 frm1;
+		private Chart stockChart;
+        private List<Product> productList = new List<Product>();
+        private readonly Form1 frm1;
 		private readonly List<Order> orderQueue = new List<Order>();
 		public int CustomerId { get; set; } 
 		public Frm_Musteri(Form1 form1, List<Order> sharedOrderQueue)
@@ -23,14 +25,77 @@ namespace OrderStockManagement
 			InitializeComponent();
 			frm1 = form1;
 			orderQueue = sharedOrderQueue;
-		}
+            InitializeChart();
+        }
 
-		public string M_id;
+
+        private void InitializeChart()
+        {
+            stockChart = new Chart();
+            stockChart.Size = new Size(400, 300);
+            stockChart.Location = new Point(30, 350);
+            this.Controls.Add(stockChart);
+
+            ChartArea chartArea = new ChartArea();
+            stockChart.ChartAreas.Add(chartArea);
+
+            Legend legend = new Legend();
+            stockChart.Legends.Add(legend);
+        }
+
+        private void LoadStockChart()
+        {
+            if (productList == null || productList.Count == 0)
+            {
+                MessageBox.Show("Ürün listesi boş. Grafik oluşturulamadı.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            stockChart.Series.Clear();
+
+            // Bar Grafik Serisi
+            Series barSeries = new Series("Stock");
+            barSeries.ChartType = SeriesChartType.Bar;
+            barSeries.IsValueShownAsLabel = true;
+            stockChart.Series.Add(barSeries);
+
+            // Veriler
+            foreach (var product in productList)
+            {
+                // Yeni veri noktası ekle
+                var dataPoint = barSeries.Points.AddXY(product.ProductName, product.Stock);
+
+                // Kritik stok seviyesi kontrolü ve renk ayarı
+                if (product.Stock < 10) // Kritik stok seviyesi 10
+                {
+                    barSeries.Points[dataPoint].Color = Color.Red; // Kritik stok
+                }
+                else
+                {
+                    barSeries.Points[dataPoint].Color = Color.Green; // Normal stok
+                }
+            }
+        }
+
+
+
+
+
+        public string M_id;
 		private void Frm_Musteri_Load(object sender, EventArgs e)
 		{
 			LblNo.Text = M_id;
 
-			string query = "SELECT CustomerName, Budget FROM customers WHERE CustomerID=@p1";
+            // Örnek: Veritabanından gelen ürünler yerine ürün listesini oluşturabilirsiniz.
+            productList = LoadProductsFromDatabase();
+			LoadStockChart(); // Grafik yüklenir
+
+            // Stock Chart Konumu ve Boyutu Ayarla
+            stockChart.Location = new System.Drawing.Point(640, 211);
+            stockChart.Size = new System.Drawing.Size(240, 267);
+
+
+            string query = "SELECT CustomerName, Budget FROM customers WHERE CustomerID=@p1";
 
 			try
 			{
@@ -64,6 +129,22 @@ namespace OrderStockManagement
 			LoadProducts();
 			
 		}
+
+        private List<Product> LoadProductsFromDatabase()
+        {
+            // Veritabanından ürünleri çeken bir örnek metod
+            string query = "SELECT ProductID, ProductName, Stock, Price FROM Products";
+            DataTable productsTable = DatabaseHelper.ExecuteQuery(query);
+
+            return (from DataRow row in productsTable.Rows
+                    select new Product
+                    {
+                        ProductID = Convert.ToInt32(row["ProductID"]),
+                        ProductName = row["ProductName"].ToString(),
+                        Stock = Convert.ToInt32(row["Stock"]),
+                        Price = Convert.ToSingle(row["Price"])
+                    }).ToList();
+        }
 
 
         private void LoadProducts()
@@ -294,6 +375,9 @@ namespace OrderStockManagement
 			this.Hide();	
 		}
 
-		
-	}
+        private void chart1_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
 }

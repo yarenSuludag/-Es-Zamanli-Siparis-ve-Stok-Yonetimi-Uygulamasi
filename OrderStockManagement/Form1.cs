@@ -208,7 +208,17 @@ namespace OrderStockManagement
 		{
 			try
 			{
-				string query = "SELECT OrderID, CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus FROM Orders";
+				string query = @"
+            SELECT OrderID, CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus 
+            FROM Orders
+            ORDER BY 
+                CASE 
+                    WHEN OrderStatus = 'Beklemede' THEN 1
+                    WHEN OrderStatus = 'Onaylandı' THEN 2
+                    ELSE 3 
+                END, 
+                OrderDate DESC";
+
 				DataTable ordersTable = DatabaseHelper.ExecuteQuery(query);
 
 				if (orderQueueGridView.InvokeRequired)
@@ -236,9 +246,10 @@ namespace OrderStockManagement
 				MessageBox.Show($"Sipariş listesi yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
-	
 
-	private void UpdateWaitingTimeColumn()
+
+
+		private void UpdateWaitingTimeColumn()
 		{
 			foreach (DataGridViewRow row in orderQueueGridView.Rows)
 			{

@@ -396,7 +396,8 @@ namespace OrderStockManagement
                     float price = Convert.ToSingle(productData.Rows[0]["Price"]);
                     float totalPrice = price * order.Quantity;
 
-                    string customerQuery = "SELECT Budget, CustomerType FROM Customers WHERE CustomerID = @customerId";
+
+					string customerQuery = "SELECT Budget, CustomerType FROM Customers WHERE CustomerID = @customerId";
                     MySqlParameter[] customerParameters = { new MySqlParameter("@customerId", order.CustomerId) };
                     DataTable customerData = DatabaseHelper.ExecuteQuery(customerQuery, customerParameters);
 
@@ -414,7 +415,13 @@ namespace OrderStockManagement
                         return;
                     }
 
-                    if (totalPrice > budget)
+					if (stock - order.Quantity < 0)
+					{
+						LogAction(order.CustomerId, "Error", "Stok sıfırın altına düşemez.");
+						return;
+					}
+
+					if (totalPrice > budget)
                     {
                         LogAction(order.CustomerId, "Error", "Yetersiz bütçe.");
                         return;

@@ -89,13 +89,13 @@
 			this.customersGridView.Margin = new System.Windows.Forms.Padding(4);
 			this.customersGridView.Name = "customersGridView";
 			this.customersGridView.RowHeadersWidth = 51;
-			this.customersGridView.Size = new System.Drawing.Size(607, 185);
+			this.customersGridView.Size = new System.Drawing.Size(574, 185);
 			this.customersGridView.TabIndex = 11;
 			this.customersGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.customersGridView_CellContentClick);
 			// 
 			// productLabel
 			// 
-			this.productLabel.Location = new System.Drawing.Point(645, 66);
+			this.productLabel.Location = new System.Drawing.Point(629, 66);
 			this.productLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.productLabel.Name = "productLabel";
 			this.productLabel.Size = new System.Drawing.Size(133, 28);
@@ -106,11 +106,11 @@
 			// 
 			this.productsGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
 			this.productsGridView.ColumnHeadersHeight = 29;
-			this.productsGridView.Location = new System.Drawing.Point(648, 98);
+			this.productsGridView.Location = new System.Drawing.Point(632, 98);
 			this.productsGridView.Margin = new System.Windows.Forms.Padding(4);
 			this.productsGridView.Name = "productsGridView";
 			this.productsGridView.RowHeadersWidth = 51;
-			this.productsGridView.Size = new System.Drawing.Size(574, 185);
+			this.productsGridView.Size = new System.Drawing.Size(590, 185);
 			this.productsGridView.TabIndex = 13;
 			// 
 			// logLabel
@@ -131,12 +131,12 @@
 			this.logsGridView.Margin = new System.Windows.Forms.Padding(4);
 			this.logsGridView.Name = "logsGridView";
 			this.logsGridView.RowHeadersWidth = 51;
-			this.logsGridView.Size = new System.Drawing.Size(615, 212);
+			this.logsGridView.Size = new System.Drawing.Size(582, 212);
 			this.logsGridView.TabIndex = 15;
 			// 
 			// addCustomerButton
 			// 
-			this.addCustomerButton.Location = new System.Drawing.Point(128, 302);
+			this.addCustomerButton.Location = new System.Drawing.Point(116, 302);
 			this.addCustomerButton.Margin = new System.Windows.Forms.Padding(4);
 			this.addCustomerButton.Name = "addCustomerButton";
 			this.addCustomerButton.Size = new System.Drawing.Size(187, 37);
@@ -158,15 +158,15 @@
 			// 
 			this.orderQueueGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
 			this.orderQueueGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.orderQueueGridView.Location = new System.Drawing.Point(648, 424);
+			this.orderQueueGridView.Location = new System.Drawing.Point(632, 424);
 			this.orderQueueGridView.Name = "orderQueueGridView";
 			this.orderQueueGridView.RowHeadersWidth = 51;
-			this.orderQueueGridView.Size = new System.Drawing.Size(574, 212);
+			this.orderQueueGridView.Size = new System.Drawing.Size(590, 212);
 			this.orderQueueGridView.TabIndex = 28;
 			// 
 			// label4
 			// 
-			this.label4.Location = new System.Drawing.Point(645, 393);
+			this.label4.Location = new System.Drawing.Point(629, 393);
 			this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(452, 28);
@@ -176,7 +176,7 @@
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(337, 302);
+			this.button1.Location = new System.Drawing.Point(325, 302);
 			this.button1.Margin = new System.Windows.Forms.Padding(4);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(185, 37);
@@ -206,7 +206,7 @@
 			// 
 			// BtnOnay
 			// 
-			this.BtnOnay.Location = new System.Drawing.Point(870, 643);
+			this.BtnOnay.Location = new System.Drawing.Point(852, 643);
 			this.BtnOnay.Margin = new System.Windows.Forms.Padding(4);
 			this.BtnOnay.Name = "BtnOnay";
 			this.BtnOnay.Size = new System.Drawing.Size(201, 37);

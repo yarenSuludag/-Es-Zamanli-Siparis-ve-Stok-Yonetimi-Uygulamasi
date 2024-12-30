@@ -114,6 +114,7 @@ namespace OrderStockManagement
 					return;
 				}
 
+
 				// Müşteri bakiye kontrolü
 				decimal productPrice = GetProductPriceById(productId);
 				decimal totalCost = productPrice * quantity;

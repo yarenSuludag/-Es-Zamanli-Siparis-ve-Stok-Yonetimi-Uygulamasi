@@ -133,11 +133,12 @@ namespace OrderStockManagement
             MessageBox.Show("Başlık tıklandı!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        public void LoadCustomers()
-        {
-            string query = "SELECT * FROM Customers ORDER BY CustomerType DESC, CustomerID ASC";
-            customersGridView.DataSource = DatabaseHelper.ExecuteQuery(query);
-        }
+		public void LoadCustomers()
+		{
+			string query = "SELECT * FROM Customers ORDER BY RAND()";
+			customersGridView.DataSource = DatabaseHelper.ExecuteQuery(query);
+		}
+
 
 		public void LoadProducts()
 		{

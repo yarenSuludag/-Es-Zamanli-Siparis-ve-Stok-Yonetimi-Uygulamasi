@@ -578,93 +578,59 @@ namespace OrderStockManagement
 		{
 			try
 			{
-				foreach (var order in orderQueue.ToList()) // Sıradaki tüm siparişler için işlem
+				string getOrdersQuery = "SELECT * FROM Orders WHERE OrderStatus = 'Beklemede'";
+				DataTable pendingOrders = DatabaseHelper.ExecuteQuery(getOrdersQuery);
+
+				foreach (DataRow order in pendingOrders.Rows)
 				{
-					// Ürün bilgilerini kontrol et
-					string productQuery = "SELECT Stock, Price FROM Products WHERE ProductID = @productId";
-					MySqlParameter[] productParams = { new MySqlParameter("@productId", order.ProductId) };
-					DataTable productData = DatabaseHelper.ExecuteQuery(productQuery, productParams);
+					int customerId = Convert.ToInt32(order["CustomerID"]);
+					int productId = Convert.ToInt32(order["ProductID"]);
+					int quantity = Convert.ToInt32(order["Quantity"]);
+					decimal totalPrice = Convert.ToDecimal(order["TotalPrice"]);
 
-					if (productData.Rows.Count == 0)
-					{
-						LogAction(order.CustomerId, "Error", "Ürün bulunamadı.");
-						continue;
-					}
-
-					int stock = Convert.ToInt32(productData.Rows[0]["Stock"]);
-					decimal price = Convert.ToDecimal(productData.Rows[0]["Price"]);
-					decimal totalPrice = price * order.Quantity;
-
-					// Müşteri bilgilerini kontrol et
-					string customerQuery = "SELECT Budget FROM Customers WHERE CustomerID = @customerId";
-					MySqlParameter[] customerParams = { new MySqlParameter("@customerId", order.CustomerId) };
-					DataTable customerData = DatabaseHelper.ExecuteQuery(customerQuery, customerParams);
-
-					if (customerData.Rows.Count == 0)
-					{
-						LogAction(order.CustomerId, "Error", "Müşteri bulunamadı.");
-						continue;
-					}
-
-					decimal budget = Convert.ToDecimal(customerData.Rows[0]["Budget"]);
-
-					// Stok ve bütçe kontrolü
-					if (order.Quantity > stock)
-					{
-						LogAction(order.CustomerId, "Error", "Yetersiz stok.");
-						continue;
-					}
-
-					if (totalPrice > budget)
-					{
-						LogAction(order.CustomerId, "Error", "Yetersiz bütçe.");
-						continue;
-					}
-
-					// Stok güncelle
+					// Stock update
 					string updateStockQuery = "UPDATE Products SET Stock = Stock - @quantity WHERE ProductID = @productId";
 					MySqlParameter[] updateStockParams = {
-				new MySqlParameter("@quantity", order.Quantity),
-				new MySqlParameter("@productId", order.ProductId)
+				new MySqlParameter("@quantity", quantity),
+				new MySqlParameter("@productId", productId)
 			};
 					DatabaseHelper.ExecuteNonQuery(updateStockQuery, updateStockParams);
 
-					// Bütçe güncelle
+					// Budget update
 					string updateBudgetQuery = "UPDATE Customers SET Budget = Budget - @totalPrice WHERE CustomerID = @customerId";
 					MySqlParameter[] updateBudgetParams = {
 				new MySqlParameter("@totalPrice", totalPrice),
-				new MySqlParameter("@customerId", order.CustomerId)
+				new MySqlParameter("@customerId", customerId)
 			};
 					DatabaseHelper.ExecuteNonQuery(updateBudgetQuery, updateBudgetParams);
 
-					// Sipariş durumu güncelle
-					string updateOrderQuery = "UPDATE Orders SET OrderStatus = 'Approved' WHERE OrderID = @orderId";
+					// Order status update
+					string updateOrderQuery = "UPDATE Orders SET OrderStatus = 'Onaylandı' WHERE OrderID = @orderId";
 					MySqlParameter[] updateOrderParams = {
-				new MySqlParameter("@orderId", order.OrderId)
+				new MySqlParameter("@orderId", order["OrderID"])
 			};
 					DatabaseHelper.ExecuteNonQuery(updateOrderQuery, updateOrderParams);
 
-					// Log kaydı oluştur
-					LogAction(order.CustomerId, "Info", $"Sipariş onaylandı: Ürün ID={order.ProductId}, Miktar={order.Quantity}");
+					LogAction(customerId, "Info", $"Sipariş onaylandı: Ürün ID={productId}, Miktar={quantity}");
 
-					// İşlenmiş siparişi kuyruktan kaldır
+					// Clear order from queue
 					lock (orderQueue)
 					{
-						orderQueue.Remove(order);
+						orderQueue.RemoveAll(o => o.CustomerId == customerId && o.ProductId == productId);
 					}
 				}
 
-				// Tüm tabloları yenile
-				LoadProducts();
+				// Refresh all tables
 				LoadCustomers();
-				UpdateOrderQueueDisplay();
+				LoadProducts();
 				LoadLogs();
+				UpdateOrderQueueDisplay();
 
-				MessageBox.Show("Tüm siparişler onaylandı ve tablolar güncellendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				MessageBox.Show("Siparişler onaylandı ve işlendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Sipariş onaylama sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Sipariş onaylama hatası: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 

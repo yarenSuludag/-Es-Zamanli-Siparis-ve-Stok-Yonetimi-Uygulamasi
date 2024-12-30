@@ -104,12 +104,8 @@ namespace OrderStockManagement
 					return;
 				}
 
-				// Ürün ve müşteri bilgilerini kontrol et
+				// Ürün stok kontrolü
 				int currentStock = GetProductStockById(productId);
-				decimal productPrice = GetProductPriceById(productId);
-				decimal totalCost = productPrice * quantity;
-				decimal customerBudget = GetCustomerBalance(customerId);
-
 				if (currentStock < quantity)
 				{
 					string errorMessage = "Ürün stoğu yetersiz.";
@@ -118,26 +114,26 @@ namespace OrderStockManagement
 					return;
 				}
 
+				// Müşteri bakiye kontrolü
+				decimal productPrice = GetProductPriceById(productId);
+				decimal totalCost = productPrice * quantity;
+				decimal customerBudget = GetCustomerBalance(customerId);
+
 				if (customerBudget < totalCost)
 				{
-					string errorMessage = "Müşteri bakiyesi yetersiz.";
-					frm1.LogAction(customerId, "Error", $"{errorMessage} | Gerekli Bakiye: {totalCost:C}, Mevcut Bakiye: {customerBudget:C}");
+					string errorMessage = "Müşteri bakiyesi (budget) yetersiz.";
+					frm1.LogAction(customerId, "Error", $"{errorMessage} | Gerekli Bakiye: {totalCost:C}, Mevcut Bakiye: {customerBudget:C}", productId);
 					MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return;
 				}
 
-				// Siparişi sıraya ekle (fiziksel değişiklik yapılmaz!)
-				lock (orderQueue)
-				{
-					orderQueue.Add(new Order(customerId, productId, quantity));
-				}
-
-				// Log kaydı oluştur
+				// Sipariş ekle
+				AddOrderToDatabase(new Order(customerId, productId, quantity));
 				frm1.LogAction(customerId, "Info", $"Sipariş sıraya alındı: Ürün ID: {productId}, Miktar: {quantity}", productId);
-				frm1.UpdateOrderQueueDisplay();
+				// Sadece UI güncelleme
 				UpdateOrderQueueDisplay();
+				frm1.UpdateOrderQueueDisplay();
 
-				// Bilgi mesajı göster
 				MessageBox.Show("Sipariş sıraya alındı! Onay bekleniyor.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 			catch (FormatException)
@@ -146,14 +142,29 @@ namespace OrderStockManagement
 			}
 			catch (Exception ex)
 			{
-				string errorMessage = $"Sipariş ekleme sırasında bir hata oluştu: {ex.Message}";
+				string errorMessage = $"Sipariş ekleme sırasında hata oluştu: {ex.Message}";
 				frm1.LogAction(null, "Error", errorMessage);
 				MessageBox.Show(errorMessage, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
+		// In Frm_Musteri.cs
+		private void AddOrderToDatabase(Order order)
+		{
+			string query = "INSERT INTO Orders (CustomerID, ProductID, Quantity, TotalPrice, OrderDate, OrderStatus) " +
+						  "VALUES (@customerId, @productId, @quantity, @totalPrice, @orderDate, @orderStatus)";
 
+			MySqlParameter[] parameters = {
+		new MySqlParameter("@customerId", order.CustomerId),
+		new MySqlParameter("@productId", order.ProductId),
+		new MySqlParameter("@quantity", order.Quantity),
+		new MySqlParameter("@totalPrice", order.Quantity * GetProductPriceById(order.ProductId)),
+		new MySqlParameter("@orderDate", DateTime.Now),
+		new MySqlParameter("@orderStatus", "Beklemede") // Changed to Turkish
+    };
 
+			DatabaseHelper.ExecuteNonQuery(query, parameters);
+		}
 
 
 		private decimal GetProductPriceById(int productId)

@@ -8,6 +8,8 @@ using System.Threading;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using OrderStockManagement.Models;
+using System.Timers;
+
 
 namespace OrderStockManagement
 {
@@ -26,7 +28,23 @@ namespace OrderStockManagement
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            InitializeRandomCustomers();
+			orderQueueGridView.AutoGenerateColumns = true;  // Change to true first
+
+			// Load initial data
+			string query = "SELECT * FROM Orders";
+			orderQueueGridView.DataSource = DatabaseHelper.ExecuteQuery(query);
+
+			// Now add the waiting time column
+			if (!orderQueueGridView.Columns.Contains("waitingTime"))
+			{
+				DataGridViewTextBoxColumn waitingTimeColumn = new DataGridViewTextBoxColumn();
+				waitingTimeColumn.Name = "waitingTime";
+				waitingTimeColumn.HeaderText = "Bekleme Süresi";
+				waitingTimeColumn.ReadOnly = true;
+				orderQueueGridView.Columns.Add(waitingTimeColumn);
+			}
+
+			InitializeRandomCustomers();
             LoadCustomers();
             LoadProducts();
             LoadLogs();
@@ -53,6 +71,8 @@ namespace OrderStockManagement
 			productsGridView.Columns.Insert(0, checkColumn2);
 
 			//productsGridView.ReadOnly=true;
+
+			
 		}
 
 		private void CustomizeUI()
@@ -192,15 +212,22 @@ namespace OrderStockManagement
 
 				if (orderQueueGridView.InvokeRequired)
 				{
-					// UI iş parçacığında güncelleme
 					orderQueueGridView.Invoke(new Action(() =>
 					{
 						orderQueueGridView.DataSource = ordersTable;
+						if (orderQueueGridView.Columns.Contains("waitingTime"))
+						{
+							UpdateWaitingTimeColumn();
+						}
 					}));
 				}
 				else
 				{
 					orderQueueGridView.DataSource = ordersTable;
+					if (orderQueueGridView.Columns.Contains("waitingTime"))
+					{
+						UpdateWaitingTimeColumn();
+					}
 				}
 			}
 			catch (Exception ex)
@@ -208,6 +235,32 @@ namespace OrderStockManagement
 				MessageBox.Show($"Sipariş listesi yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
+	
+
+	private void UpdateWaitingTimeColumn()
+		{
+			foreach (DataGridViewRow row in orderQueueGridView.Rows)
+			{
+				// "OrderDate" ve "OrderStatus" hücrelerini kontrol et
+				if (row.Cells["OrderDate"].Value != null &&
+					row.Cells["OrderStatus"].Value != null &&
+					row.Cells["OrderStatus"].Value.ToString() == "Beklemede")
+				{
+					DateTime orderDate = Convert.ToDateTime(row.Cells["OrderDate"].Value);
+					TimeSpan waitingTime = DateTime.Now - orderDate;
+					row.Cells["waitingTime"].Value = $"{waitingTime.TotalSeconds:F0} saniye";
+				}
+				else if (row.Cells["OrderStatus"].Value != null && row.Cells["OrderStatus"].Value.ToString() == "Onaylandı")
+				{
+					row.Cells["waitingTime"].Value = "Onaylandı";
+				}
+				else
+				{
+					row.Cells["waitingTime"].Value = "Bilinmiyor";
+				}
+			}
+		}
+
 
 
 
@@ -611,7 +664,7 @@ namespace OrderStockManagement
 			};
 					DatabaseHelper.ExecuteNonQuery(updateOrderQuery, updateOrderParams);
 
-					LogAction(customerId, "Info", $"Sipariş onaylandı: Ürün ID={productId}, Miktar={quantity}");
+					LogAction(customerId, "Info", $"Sipariş onaylandı: Ürün ID={productId}, Miktar={quantity}", productId);
 
 					// Clear order from queue
 					lock (orderQueue)
